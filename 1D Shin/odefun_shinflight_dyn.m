@@ -8,7 +8,6 @@ Kd = shin.damper.Kd;
 g = shin.g;
 
 %% ------------- Forces --------------------
-t
 th1 = X(1);
 l1 = X(2);
 ycm = X(3);

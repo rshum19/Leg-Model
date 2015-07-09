@@ -1,0 +1,12 @@
+function [ GRF ] = calc_GRF(x, dx, k, c )
+%CALC_GRF calculated the ground reaction force
+% Inputs:
+%   - x:    position
+%   - dx:   velocity
+%   - k:    spring constant
+%   - c:    damping coefficient
+
+Fs = K*x;
+
+end
+

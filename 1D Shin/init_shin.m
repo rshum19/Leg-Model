@@ -12,7 +12,10 @@ shin.spring.kmax = 0.28;
 shin.spring.Kb = 1e3;
 shin.spring.k0 = 0.25;
 
-shin.damper.Kd = 0.5e3;
+shin.damper.Kd = 0.5e2;
+shin.damper.Kdmax = 1.5e2;
+shin.damper.Kdmin = 0.5e1;
+shin.damper.Kd_q = 0;
 shin.l1min = shin.l1max - shin.spring.k0;
 shin.g = 9.81;
 

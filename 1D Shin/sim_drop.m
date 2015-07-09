@@ -1,16 +1,12 @@
-%% SIM_DROP_SHIN simulates the drop the shin
+function [ max_bounce_height ] = sim_drop( shin, Kd_q )
 
 %% --------------------- Initialize Workspace -----------------------
-clear ; close all; clc;
-
-% initialize shin
-init_shin;
 
 % set Ground properties
 params.ground.Kg = 10e4;     % [N/m]
 params.ground.Bg = 75;       % [Ns/m]
 params.ground.y_td = 0;
-params.vardamping = 0;
+params.vardamping = 1;
 
 % Set initial conditions
 th1_0 = 0;
@@ -29,12 +25,12 @@ tout = 0;
 Xout = X0.';
 
 %% ------------------ Flight Phase ------------------------------
-fprintf('Flight\n')
+%fprintf('Flight\n');
 options = odeset('RelTol',1e-2,'AbsTol',1e-2,...
                      'Events',@(t,x)sim_shinflight_events(t,x,shin),'Stats','off');
 
 tstart = 0;
-tend = 10;
+tend = 50;
 
 [t,X] = ode45(@(t,x)odefun_shinflight_dyn(t,x,shin, params),[tstart,tend],X0,options);
 
@@ -43,6 +39,7 @@ nt = length(t);
 tout = [tout; t(2:nt)];
 Xout = [Xout; X(2:nt,:)];
 %% ------------- Flight --> Stance Phase -----------------------
+%fprintf('Flight-->Stance\n')
 % This defines the initial conditions for the simulation of the leg during contact with ground
 
 % Change in state variable vector reduces in size from:
@@ -51,7 +48,6 @@ Xout = [Xout; X(2:nt,:)];
 %   q = [th1, l1, dth1, dl1];
 %
 % Extract state just before impact w/ ground (qf-)
-fprintf('Flight --> Stance\n')
 qf = X(end,1:3);
 dqf = X(end,4:6);
 Q_fminus = [qf, dqf];
@@ -67,6 +63,8 @@ dqs = inv(A + mt*dPf2comdq'*dPf2comdq)*[A, mt*dPf2comdq']*dqf';
 Q_stnc_plus = [qf(1:2),dqs'];
 
 %% ------------------ Stance Phase ------------------------------
+%fprintf('Stance')
+shin.damper.Kd_q = Kd_q;
 X0 = Q_stnc_plus;
 tstart = tout(end);
 
@@ -91,36 +89,14 @@ tout = [tout; t(2:nt)];
 Xtemp = [X(2:nt,1:2), Xcm(2:nt),X(2:nt,3:4),dXcm(2:nt)];
 Xout = [Xout; Xtemp];
 
-% Ground Reaction Force
-GRF = calc_GRF(Xout(:,2),Xout(:,5),shin.spring.Ksp,shin.damper
 
 %% ---------------- Stance --> Flight ----------------------------
-
+%fprintf('Stance-->Flight\n')
 dy_lom = Xout(end,6);
 dy_lop = shin.m2/(shin.m1 + shin.m2)*dy_lom;
 
-% find position difference
-for i = 2:size(Xout,1)
-    pos_diff(i) = Xout(i,3)-Xout(i-1,3);
-end
-
-
-figure
-% COM Position plot
-subplot(2,1,1)
-plot(tout,Xout(:,3))
-ylabel('COM y-position')
-
-% COM Velocity plot
-subplot(2,1,2)
-plot(tout,Xout(:,6)) 
-hold on;
-plot([tout(1),tout(end)],zeros(1,2),'k-')
-hold off;
-ylabel('COM y-velocity')
-xlabel('Time (sec)')
-
 %% ----------------- Flight --------------------------------------
+%fprintf('Flight\n')
 options = odeset('RelTol',1e-2,'AbsTol',1e-2,'Events',@(t,x)sim_shinflight_events(t,x,shin));
 tstart = tout(end);
 X0 = [ th1_0; l1_0; Xout(end,3);...
@@ -136,33 +112,22 @@ nt = length(t);
 tout = [tout; t(2:nt)];
 Xout = [Xout; X(2:nt,:)];
 
-
-% Calculate Ground Reaction Force
-
-%% ------------------ Animation & Plots -------------------------
-%shin_animation(shin, Xout)
-%shin_animation(shin, Xi)
-
-
-figure
+% Plot
+figure(1)
 % COM Position plot
-subplot(2,2,1)
+subplot(2,1,1)
 plot(tout,Xout(:,3))
 ylabel('COM y-position')
 
 % COM Velocity plot
-subplot(2,2,3)
+subplot(2,1,2)
 plot(tout,Xout(:,6)) 
 hold on;
 plot([tout(1),tout(end)],zeros(1,2),'k-')
 hold off;
 ylabel('COM y-velocity')
 xlabel('Time (sec)')
+pause(0.1);
 
-% Spring  Position
-subplot(2,2,2)
-plot(tout,Xout(:,2))
-
-subplot(2,2,4)
-plot(tout,Xout(:,5))
+end
 

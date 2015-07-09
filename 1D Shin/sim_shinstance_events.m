@@ -17,6 +17,8 @@ function [value,isterminal,direction] = sim_shinstance_events(t,x,shin)
 
     maxCheck = shin.l1max - x(2);
 
+% Position difference
+
 % Event to check lift-off 
 
 value = [minCheck;maxCheck];

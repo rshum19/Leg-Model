@@ -20,7 +20,7 @@ function [value,isterminal,direction] = sim_shinflight_events(t,x,shin)
 % The position of the foot relative to the inertial frame, let the ground be
 % positioned and yf = 0;
 
-    Pf2com = COMrel2Foot(shin, x)
+    Pf2com = COMrel2Foot(shin, x);
     ycm = x(3) - Pf2com;
 
 % Event to check lift-off 
